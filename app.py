@@ -1,8 +1,8 @@
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
+from folium.plugins import Draw
 import pandas as pd
-import numpy as np
 
 st.set_page_config(page_title="AgroPrecision SIG & IoT", layout="wide")
 
@@ -26,25 +26,32 @@ st.divider()
 
 # Navegación por Pestañas
 tab1, tab2, tab3 = st.tabs([
-    "📍 1. Mapeo y SIG (Satelital)", 
+    "📍 1. Mapeo y SIG (Satelital + Dibujo)", 
     "💧 2. Clima y Decisión de Riego", 
     "🛸 3. Monitoreo Aéreo / Dron (NDVI)"
 ])
 
 with tab1:
-    st.markdown("### Módulo 1: Mapeo y SIG Agrícola Satelital")
-    st.write("Vista de mapa satelital de alta resolución y delimitación de lotes.")
+    st.markdown("### Módulo 1: Mapeo y SIG Agrícola Interactivo")
+    st.write("Utilizá el panel de herramientas a la izquierda del mapa para **dibujar nuevos lotes, medir distancias o editar polígonos**.")
     
-    # Coordenadas de la Chacra (Las Lomitas)
+    # Coordenadas base (Las Lomitas, Formosa)
     lat_center, lon_center = -24.7061, -60.5931
     
-    # Mapa con capa Satelital (Esri World Imagery)
-    m = folium.Map(
-        location=[lat_center, lon_center], 
-        zoom_start=16,
+    # Crear mapa base
+    m = folium.Map(location=[lat_center, lon_center], zoom_start=15)
+    
+    # Capa 1: Esri Satellite
+    folium.TileLayer(
         tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        attr='Esri World Imagery'
-    )
+        attr='Esri World Imagery',
+        name='Satélite Esri HD',
+        overlay=False,
+        control=True
+    ).add_to(m)
+    
+    # Capa 2: OpenStreetMap (Mapa estándar)
+    folium.TileLayer('openstreetmap', name='Mapa de Calles / Caminos').add_to(m)
     
     # Polígono Lote 1 - Sandia
     lote_sandia = [
@@ -71,7 +78,26 @@ with tab1:
         icon=folium.Icon(color="blue", icon="tint", prefix="fa")
     ).add_to(m)
     
-    st_folium(m, width=950, height=520)
+    # Herramienta de Dibujo y Edición (Draw)
+    draw = Draw(
+        export=True,
+        filename='lote_dibujado.geojson',
+        position='topleft',
+        draw_options={
+            'polyline': True,
+            'polygon': True,
+            'circle': False,
+            'rectangle': True,
+            'marker': True,
+            'circlemarker': False
+        }
+    )
+    draw.add_to(m)
+    
+    # Selector de Capas (Esquina superior derecha)
+    folium.LayerControl(position='topright').add_to(m)
+    
+    st_folium(m, width=950, height=530)
 
 with tab2:
     st.markdown("### Módulo 2: Clima y Decisión de Riego")
