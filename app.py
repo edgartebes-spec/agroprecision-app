@@ -96,7 +96,7 @@ col_r1.metric("Necesidad Hídrica Neta", f"{nec_mm_dia:.1f} mm/día")
 col_r2.metric("Volumen Requerido Total", f"{litros_totales:,} Litros".replace(",", "."))
 col_r3.metric("Tiempo Estimado de Bombeo", f"{horas_riego} hs")
 
- recomendacion = ""
+recomendacion = ""
 if humedad_suelo < 30:
     recomendacion = f"ALERTA: Suelo seco ({humedad_suelo}%). Programar riego por {horas_riego} hs ({litros_totales} Litros)."
     st.error(f"🚨 **RECOMENDACIÓN:** {recomendacion}")
