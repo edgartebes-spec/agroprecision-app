@@ -33,15 +33,24 @@ tab1, tab2, tab3 = st.tabs([
 
 with tab1:
     st.markdown("### Módulo 1: Mapeo y SIG Agrícola Interactivo")
-    st.write("Utilizá el panel de herramientas a la izquierda del mapa para **dibujar nuevos lotes, medir distancias o editar polígonos**.")
+    st.write("Visor satelital enfocado en la **Chacra Las Lomitas**. Utilizá las herramientas de la izquierda para dibujar nuevos lotes o medir superficies.")
     
-    # Coordenadas base (Las Lomitas, Formosa)
-    lat_center, lon_center = -24.7061, -60.5931
+    # Coordenadas reales del perímetro de la chacra
+    esquina1 = [-24.781825, -60.462643]
+    esquina2 = [-24.780997, -60.461897]
+    esquina3 = [-24.780359, -60.462948]
+    esquina4 = [-24.781128, -60.463667]
     
-    # Crear mapa base
-    m = folium.Map(location=[lat_center, lon_center], zoom_start=15)
+    poligono_chacra = [esquina1, esquina2, esquina3, esquina4]
     
-    # Capa 1: Esri Satellite
+    # Centro geométrico para enfocar el mapa
+    lat_center = sum([p[0] for p in poligono_chacra]) / 4
+    lon_center = sum([p[1] for p in poligono_chacra]) / 4
+    
+    # Crear mapa base centrado en la chacra real
+    m = folium.Map(location=[lat_center, lon_center], zoom_start=17)
+    
+    # Capa 1: Esri Satellite HD
     folium.TileLayer(
         tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attr='Esri World Imagery',
@@ -50,35 +59,28 @@ with tab1:
         control=True
     ).add_to(m)
     
-    # Capa 2: OpenStreetMap (Mapa estándar)
+    # Capa 2: OpenStreetMap
     folium.TileLayer('openstreetmap', name='Mapa de Calles / Caminos').add_to(m)
     
-    # Polígono Lote 1 - Sandia
-    lote_sandia = [
-        [-24.7045, -60.5960],
-        [-24.7045, -60.5915],
-        [-24.7075, -60.5915],
-        [-24.7075, -60.5960]
-    ]
-    
+    # Polígono de la Chacra
     folium.Polygon(
-        locations=lote_sandia,
+        locations=poligono_chacra,
         color="#10b981",
         weight=3,
         fill=True,
         fill_color="#10b981",
-        fill_opacity=0.3,
-        popup="Lote 1: Sandia Olimpia / Andina F1 (18.5 Ha)"
+        fill_opacity=0.35,
+        popup="<b>Chacra Las Lomitas</b><br>Lote de Cultivo (Sandía Olimpia / Andina F1)"
     ).add_to(m)
     
-    # Marcador de Bomba / Electroválvula
+    # Marcador de Bomba / Electroválvula (ubicado en Esquina 1)
     folium.Marker(
-        [-24.7045, -60.5960],
+        esquina1,
         popup="Cabezal de Riego & Electroválvula #1",
         icon=folium.Icon(color="blue", icon="tint", prefix="fa")
     ).add_to(m)
     
-    # Herramienta de Dibujo y Edición (Draw)
+    # Herramienta de Dibujo y Edición (Draw Control)
     draw = Draw(
         export=True,
         filename='lote_dibujado.geojson',
@@ -94,7 +96,7 @@ with tab1:
     )
     draw.add_to(m)
     
-    # Selector de Capas (Esquina superior derecha)
+    # Selector de Capas
     folium.LayerControl(position='topright').add_to(m)
     
     st_folium(m, width=950, height=530)
