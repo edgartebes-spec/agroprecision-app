@@ -8,7 +8,7 @@ st.title("🌱 AgroPrecision SIG & IoT 4.0")
 st.subheader("Control Centralizado Sandia, Maíz y Soja • Optimización de Riego & NDVI")
 
 # Estado de sesión para la electroválvula
-if "valvula_abierta" not in st_state:
+if "valvula_abierta" not in st.session_state:
     st.session_state["valvula_abierta"] = False
 
 # Métricas superiores en tiempo real / simuladas
